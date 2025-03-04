@@ -1,9 +1,8 @@
 # Group "GROUP NAME"
 
 ## Members
-- s123456 LASTNAME FIRSTNAME
-- s123456 LASTNAME FIRSTNAME
-- s123456 LASTNAME FIRSTNAME
+- s334026 Miryavifard Hojjat
+- s334033  Behlooei Dolatsaraei Ali
 
 # Exercise "NAME OF EXERCISE"
 

@@ -1,38 +1,49 @@
+// /collections/UserCollection.js
+
 import User from '../models/User.js';
 
 class UserCollection {
-    constructor() {
-        this.users = [];
-        this.lastId = 0;
+  constructor() {
+    this.users = [];
+  }
+
+  // CREATE: Add a new User
+  addUser(user) {
+    this.users.push(user);
+  }
+
+  // READ: Retrieve all Users
+  getAllUsers() {
+    return this.users;
+  }
+
+  // READ: Retrieve a User by ID
+  getUserById(id) {
+    return this.users.find((u) => u.id === id);
+  }
+
+  // UPDATE: Update a User
+  updateUser(id, updates) {
+    const user = this.getUserById(id);
+    if (!user) return false;
+
+    Object.keys(updates).forEach((key) => {
+      if (user.hasOwnProperty(key)) {
+        user[key] = updates[key];
+      }
+    });
+    return true;
+  }
+
+  // DELETE: Remove a User
+  removeUser(id) {
+    const index = this.users.findIndex((u) => u.id === id);
+    if (index !== -1) {
+      this.users.splice(index, 1);
+      return true;
     }
-    
-    // Add a new user
-    addUser(username, email) {
-        const id = ++this.lastId;
-        const newUser = new User(id, username, email);
-        this.users.push(newUser);
-        return newUser;
-    }
-    
-    // Get user by ID
-    getUserById(id) {
-        return this.users.find(user => user.id === id);
-    }
-    
-    // Get user by username
-    getUserByUsername(username) {
-        return this.users.find(user => user.username === username);
-    }
-    
-    // Remove a user
-    removeUser(id) {
-        const index = this.users.findIndex(user => user.id === id);
-        if (index !== -1) {
-            this.users.splice(index, 1);
-            return true;
-        }
-        return false;
-    }
+    return false;
+  }
 }
 
 export default UserCollection;

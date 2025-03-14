@@ -1,22 +1,13 @@
+// /models/Shop.js
 class Shop {
-    constructor() {
-        this.availableSizes = {
-            'R': 10,  // 10 Regular bowls available
-            'M': 8,   // 8 Medium bowls available
-            'L': 6    // 6 Large bowls available
-        };
-        
-        this.prices = {
-            'R': 9,   // Regular bowl price: 9€
-            'M': 11,  // Medium bowl price: 11€
-            'L': 14   // Large bowl price: 14€
-        };
-        
-        this.bases = ['rice', 'black rice', 'salad'];
-        this.proteins = ['tuna', 'chicken', 'salmon', 'tofu'];
-        this.ingredients = ['avocado', 'ananas', 'cashew nuts', 'kale', 'mango', 
-                           'peppers', 'corn', 'wakame', 'tomatoes', 'carrots', 'salad'];
+    constructor(id, name, maxR, maxM, maxL) {
+      this.id = id;
+      this.name = name;   // e.g., "Lama Poke Shop"
+      this.maxR = maxR;   // maximum # of Regular bowls per day
+      this.maxM = maxM;   // maximum # of Medium bowls per day
+      this.maxL = maxL;   // maximum # of Large bowls per day
     }
-}
-
-export default Shop;
+  }
+  
+  export default Shop;
+  

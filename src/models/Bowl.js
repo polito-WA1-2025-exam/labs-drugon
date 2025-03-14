@@ -1,12 +1,14 @@
+// /models/Bowl.js
 class Bowl {
-    constructor(id, size, base, proteins, ingredients, quantity = 1) {
-        this.id = id;
-        this.size = size;
-        this.base = base;
-        this.proteins = proteins;
-        this.ingredients = ingredients;
-        this.quantity = quantity;
+    constructor(id, size, base, proteins, ingredients, quantity) {
+      this.id = id;
+      this.size = size;               // 'R', 'M', or 'L'
+      this.base = base;               // 'rice', 'black rice', 'salad'
+      this.proteins = proteins;       // array or comma-separated string
+      this.ingredients = ingredients; // array or comma-separated string
+      this.quantity = quantity;       // number
     }
-}
-
-export default Bowl;
+  }
+  
+  export default Bowl;
+  

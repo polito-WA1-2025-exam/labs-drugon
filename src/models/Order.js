@@ -1,12 +1,12 @@
+// /models/Order.js
 class Order {
-    constructor(id, userId, bowls, totalPrice) {
-        this.id = id;
-        this.userId = userId;        // ID of the user who placed the order
-        this.bowls = bowls;          // Array of Bowl objects
-        this.totalPrice = totalPrice;// Total price after all calculations
-        this.specialRequests = '';   // Special requests for the entire order
+    constructor(id, bowls, specialRequests) {
+      this.id = id;
+      this.bowls = bowls;                // array of Bowl objects or bowl IDs
+      this.specialRequests = specialRequests || "";
+      // e.g., "Allergic to peanuts" or "No onion"
     }
-}
-
-export default Order;
-    
+  }
+  
+  export default Order;
+  

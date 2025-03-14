@@ -1,5 +1,9 @@
-function User(id, username, email) {
-    this.id = id;
-    this.username = username;
-    this.email = email;
-  }
+class User {
+    constructor(id, username, email) {
+        this.id = id;
+        this.username = username;
+        this.email = email;
+    }
+}
+
+export default User;

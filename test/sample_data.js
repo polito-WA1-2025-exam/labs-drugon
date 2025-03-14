@@ -1,3 +1,9 @@
+// Import all needed classes
+import ShopManager from '../src/collections/ShopManager.js';
+import OrderCollection from '../src/collections/OrderCollection.js';
+import UserCollection from '../src/collections/UserCollection.js';
+import BowlCollection from '../src/collections/BowlCollection.js';
+
 // Create sample shop
 const shopManager = new ShopManager();
 

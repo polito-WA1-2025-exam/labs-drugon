@@ -10,9 +10,6 @@ import {
   updateAllBowlsOfSize
 } from '../src/db/queries.js';
 
-const db = require('../src/utils/db');
-const assert = require('assert');
-
 async function runTests() {
   try {
     console.log('=== Starting Database Tests ===\n');
@@ -89,75 +86,6 @@ async function runTests() {
       const deleteResult = await deleteBowl(allBowls[0].id);
       console.log(deleteResult.message);
     }
-
-    // Test user creation
-    function testUserCreation() {
-        const username = 'testuser';
-        const email = 'test@example.com';
-        const password = 'password123';
-
-        db.run('INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-            [username, email, password],
-            function(err) {
-                if (err) {
-                    console.error('Error creating user:', err);
-                } else {
-                    console.log('User created successfully with ID:', this.lastID);
-                }
-            }
-        );
-    }
-
-    // Test post creation
-    function testPostCreation() {
-        const userId = 1; // Assuming user with ID 1 exists
-        const title = 'Test Post';
-        const content = 'This is a test post content';
-
-        db.run('INSERT INTO posts (user_id, title, content) VALUES (?, ?, ?)',
-            [userId, title, content],
-            function(err) {
-                if (err) {
-                    console.error('Error creating post:', err);
-                } else {
-                    console.log('Post created successfully with ID:', this.lastID);
-                }
-            }
-        );
-    }
-
-    // Test user retrieval
-    function testUserRetrieval() {
-        const username = 'testuser';
-        
-        db.get('SELECT * FROM users WHERE username = ?', [username], (err, row) => {
-            if (err) {
-                console.error('Error retrieving user:', err);
-            } else {
-                console.log('Retrieved user:', row);
-            }
-        });
-    }
-
-    // Test post retrieval
-    function testPostRetrieval() {
-        const userId = 1;
-        
-        db.all('SELECT * FROM posts WHERE user_id = ?', [userId], (err, rows) => {
-            if (err) {
-                console.error('Error retrieving posts:', err);
-            } else {
-                console.log('Retrieved posts:', rows);
-            }
-        });
-    }
-
-    // Run tests
-    console.log('Running database tests...');
-    testUserCreation();
-    testPostCreation();
-    testUserRetrieval();
-    testPostRetrieval();
 
   } catch (err) {
     console.error('Test Error:', err.message);

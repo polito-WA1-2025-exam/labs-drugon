@@ -1,0 +1,61 @@
+//a) Get all bowls
+GET http://localhost:3000/api/bowls
+
+###
+//b) Get bowls by size
+GET http://localhost:3000/api/bowls/size/L
+
+###
+//c) Get bowls by protein type
+GET http://localhost:3000/api/bowls/protein/salmon
+
+###
+//d) retrieve a bowl by id
+GET http://localhost:3000/api/bowls/id/4
+
+###
+//e) insert a new bowl
+POST http://localhost:3000/api/bowls/add
+Content-Type: application/json
+
+{
+    "size": "L",
+    "base": "rice",
+    "proteins": "salmon",
+    "ingredients": "salmon, rice, vegetables",
+    "quantity": 2
+}
+
+###
+//f) delete a bowl
+DELETE http://localhost:3000/api/bowls/delete/16
+
+###
+//g) update the quantity of a bowl
+PUT http://localhost:3000/api/bowls/update/17
+Content-Type: application/json
+
+{
+    "quantity": 10  
+}
+
+###
+
+//h) update all bowls of a specific size
+PUT http://localhost:3000/api/bowls/update/size/L
+Content-Type: application/json
+
+{
+    "quantity": 10  
+}
+
+###
+//i) update the size of a bowl
+PUT http://localhost:3000/api/bowls/update/size/L
+Content-Type: application/json
+
+{
+    "size": "M"
+}
+
+###

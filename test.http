@@ -1,0 +1,11 @@
+POST http://localhost:3000/bowls
+Content-Type: application/json
+
+{
+  "size": "M",
+  "base": "salad",
+  "proteins": ["chicken"],
+  "ingredients": ["avocado", "edamame", "tomato"],
+  "quantity": 2
+}
+###

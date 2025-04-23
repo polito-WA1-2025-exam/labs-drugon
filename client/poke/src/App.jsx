@@ -12,13 +12,18 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        <nav className="main-nav">
-          <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/login">Login</Link></li>
-            <li><Link to="/orders">Orders</Link></li>
-          </ul>
-        </nav>
+        <header className="app-header">
+          <div className="header-left">
+            <Link to="/" className="logo">Poke Shop</Link>
+            <nav className="main-nav">
+              <Link to="/">Home</Link>
+              <Link to="/orders">Orders</Link>
+            </nav>
+          </div>
+          <div className="header-right">
+            <Link to="/login" className="login-link">Login</Link>
+          </div>
+        </header>
         
         <main className="main-content">
           <Routes>

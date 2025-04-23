@@ -102,15 +102,51 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
+// server/index.mjs
 app.post('/api/orders', async (req, res) => {
+  const { bowls, /* other orderData */ } = req.body;
+
   try {
-    const result = await orderDao.addOrder(req.body);
-    if (result.success) {
-      res.status(201).json(result);
-    } else {
-      res.status(400).json(result);
+    // 1) Fetch current availability per size from the bowls table
+    const avail = await bowlDao.getAvailability();    
+    // 2) Count how many of each size the user requested
+    const needed = { R: 0, M: 0, L: 0 };
+    for (let id of bowls) {
+      const b = await bowlDao.getAllBowls()
+        .then(list => list.find(x => x.id === id));
+      needed[b.size] = (needed[b.size] || 0) + 1;
     }
+    // 3) Validate against current stock
+    for (let size of ['R','M','L']) {
+      if (needed[size] > avail[size]) {
+        return res
+          .status(400)
+          .json({ success: false, message: `Not enough ${size} bowls available` });
+      }
+    }
+
+    // 4) All good → create the order
+    const result = await orderDao.addOrder(req.body);
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    // 5) Decrement inventory for each bowl ordered
+    await Promise.all(
+      bowls.map(async (id) => {
+        // fetch the bowl to get its current quantity
+        const bowl = await bowlDao.getAllBowls()
+          .then(list => list.find(x => x.id === id));
+        // subtract 1 from its stored quantity
+        return bowlDao.updateBowlQuantity(id, bowl.quantity - 1);
+      })
+    );
+
+    // 6) Return success
+    res.status(201).json(result);
+
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });

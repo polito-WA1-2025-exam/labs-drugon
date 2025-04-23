@@ -203,4 +203,21 @@ export default function BowlDAO() {
             };
         }
     };
+      // Get remaining count per size
+  this.getAvailability = async () => {
+    const db = await initializeDb();
+    const rows = await db.all(`
+      SELECT size, SUM(quantity) AS total
+      FROM bowls
+      GROUP BY size
+    `);
+
+    // initialize with 0 so missing sizes show 0
+    const avail = { R: 0, M: 0, L: 0 };
+    rows.forEach(({ size, total }) => {
+      avail[size] = total;
+    });
+    return avail;
+  };
+
 }

@@ -61,3 +61,17 @@ Content-Type: application/json
     "sunday":    "11:00-18:00"
   }
 }
+### Create 3 Regular bowls
+POST http://localhost:3000/bowls
+Content-Type: application/json
+
+{ "size":"R", "base":"rice", "proteins":["tuna"], "ingredients":["avocado"], "quantity":3 }
+
+### Create 2 Medium bowls
+POST http://localhost:3000/bowls
+Content-Type: application/json
+
+{ "size":"M", "base":"salad", "proteins":["chicken","tofu"], "ingredients":["kale"], "quantity":2 }
+
+### GET current availability
+GET http://localhost:3000/api/availability

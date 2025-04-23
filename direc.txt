@@ -1,0 +1,46 @@
+client/
+└── poke/
+    ├── node_modules/
+    ├── public/
+    │   └── vite.svg
+    ├── src/
+    │   ├── assets/
+    │   ├── App.css
+    │   ├── App.jsx
+    │   ├── index.css
+    │   └── main.jsx
+    ├── .gitignore
+    ├── eslint.config.js
+    ├── index.html
+    ├── package.json
+    ├── package-lock.json
+    ├── README.md
+    └── vite.config.js
+
+
+
+server/
+├── collections/
+│   ├── BowlCollection.mjs
+│   ├── OrderCollection.mjs
+│   ├── ShopCollection.mjs
+│   └── UserCollection.mjs
+├── db/
+│   ├── initdb.js
+│   └── poke_shop.db
+├── models/
+│   ├── Bowl.mjs
+│   ├── Order.mjs
+│   ├── Shop.mjs
+│   └── User.mjs
+├── utils/
+│   ├── db.js
+│   └── validators.js
+├── test/
+├── .gitignore
+├── direc.txt
+├── index.mjs
+├── package-lock.json
+├── package.json
+├── README.md
+└── test.http

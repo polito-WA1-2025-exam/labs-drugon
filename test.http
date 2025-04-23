@@ -9,3 +9,55 @@ Content-Type: application/json
   "quantity": 2
 }
 ###
+
+### Get all orders
+GET http://localhost:3000/api/orders
+
+### Add a new order
+POST http://localhost:3000/api/orders
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "bowls": [1, 2],
+  "totalPrice": 25.99,
+  "status": "pending"
+}
+
+### Update order status
+PUT http://localhost:3000/api/orders/1
+Content-Type: application/json
+
+{
+  "status": "confirmed"
+}
+
+### Delete an order
+DELETE http://localhost:3000/api/orders/1
+
+### Get all bowls (for reference)
+GET http://localhost:3000/bowls
+
+### Get all shops
+GET http://localhost:3000/api/shops
+
+### Get availability
+GET http://localhost:3000/api/availability
+
+### Create a new shop
+POST http://localhost:3000/api/shops
+Content-Type: application/json
+
+{
+  "name": "Poke Heaven",
+  "address": "123 Sushi Lane, Turin",
+  "openingHours": {
+    "monday":    "10:00-20:00",
+    "tuesday":   "10:00-20:00",
+    "wednesday": "10:00-20:00",
+    "thursday":  "10:00-20:00",
+    "friday":    "10:00-22:00",
+    "saturday":  "11:00-22:00",
+    "sunday":    "11:00-18:00"
+  }
+}

@@ -92,7 +92,7 @@ export default function UserDAO() {
     this.getUserByUsername = async (username) => {
         const db = await initializeDb();
         const user = await db.get('SELECT * FROM users WHERE username = ?', username);
-        return user ? userModel.formatUser(user) : null;
+        return user || null;
     };
 
     // Update user

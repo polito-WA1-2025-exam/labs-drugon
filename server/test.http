@@ -1,0 +1,83 @@
+### Test Availability Endpoint
+GET http://localhost:3000/api/availability
+Accept: application/json
+
+### Test Availability Endpoint (Alternative Port)
+GET http://localhost:5000/api/availability
+Accept: application/json
+
+### Test Create Bowl (Regular)
+POST http://localhost:3000/bowls
+Content-Type: application/json
+
+{
+  "size": "R",
+  "base": "rice",
+  "proteins": ["salmon"],
+  "ingredients": ["cucumber", "avocado", "carrot"],
+  "quantity": 1
+}
+
+### Test Create Bowl (Medium)
+POST http://localhost:3000/bowls
+Content-Type: application/json
+
+{
+  "size": "M",
+  "base": "black rice",
+  "proteins": ["salmon", "tuna"],
+  "ingredients": ["cucumber", "avocado", "carrot", "onion"],
+  "quantity": 1
+}
+
+### Test Create Bowl (Large)
+POST http://localhost:3000/bowls
+Content-Type: application/json
+
+{
+  "size": "L",
+  "base": "salad",
+  "proteins": ["salmon", "tuna", "chicken"],
+  "ingredients": ["cucumber", "avocado", "carrot", "onion", "edamame", "corn"],
+  "quantity": 1
+}
+
+### Test Create Multiple Bowls (Regular)
+POST http://localhost:3000/bowls
+Content-Type: application/json
+
+{
+  "size": "R",
+  "base": "rice",
+  "proteins": ["salmon"],
+  "ingredients": ["cucumber", "avocado", "carrot"],
+  "quantity": 5
+}
+
+### Test Create Bowl (Invalid Size)
+POST http://localhost:3000/bowls
+Content-Type: application/json
+
+{
+  "size": "XL",
+  "base": "rice",
+  "proteins": ["salmon"],
+  "ingredients": ["cucumber", "avocado", "carrot"],
+  "quantity": 1
+}
+
+### Test Create Bowl (Exceeding Daily Limit)
+POST http://localhost:3000/bowls
+Content-Type: application/json
+
+{
+  "size": "R",
+  "base": "rice",
+  "proteins": ["salmon"],
+  "ingredients": ["cucumber", "avocado", "carrot"],
+  "quantity": 15
+}
+
+### Test Reset Daily Counts
+POST http://localhost:3000/bowls/reset
+Content-Type: application/json 

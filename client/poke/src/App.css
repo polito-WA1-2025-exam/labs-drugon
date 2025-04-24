@@ -154,6 +154,16 @@
   background-color: #1b2736;
 }
 
+/* Global error notifications */
+.error {
+  color: #dc3545;
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
 /* Logo hover effects (from original) */
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
@@ -406,14 +416,4 @@
 
 .delete-btn:hover {
   background-color: #c82333;
-}
-
-/* Global error notifications */
-.error {
-  color: #dc3545;
-  background-color: #f8d7da;
-  border: 1px solid #f5c6cb;
-  border-radius: 4px;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
 }

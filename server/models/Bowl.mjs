@@ -1,8 +1,22 @@
 // /models/Bowl.mjs
 
-export default function Bowl() {
+export default function Bowl(db) {
+    // Static size definitions with daily limits
+    this.sizes = {
+        R: { name: 'Regular', limit: 10, price: 10.00 },
+        M: { name: 'Medium', limit: 8, price: 12.00 },
+        L: { name: 'Large', limit: 6, price: 14.00 }
+    };
+
+    // Store the database connection
+    this.db = db;
+
     // Create a new bowl
     this.createBowl = (size, base, proteins, ingredients, quantity, id = null) => {
+        if (!this.sizes[size]) {
+            throw new Error('Invalid bowl size');
+        }
+
         return {
             id,              // Will be set by the collection
             size,           // 'R', 'M', or 'L'
@@ -103,22 +117,41 @@ export default function Bowl() {
 
         return price;
     };
-    // server/collections/BowlCollection.mjs
-this.getAvailability = async () => {
-    const db = await initializeDb();
-    // Sum up the `quantity` column per size
-    const rows = await db.all(`
-      SELECT size, SUM(quantity) AS total
-      FROM bowls
-      GROUP BY size
-    `);
-  
-    // Build { R: x, M: y, L: z } with defaults of 0
-    const avail = { R: 0, M: 0, L: 0 };
-    rows.forEach(row => {
-      avail[row.size] = row.total;
-    });
-    return avail;
-  };
-  
+
+    // Get bowl availability by size
+    this.getAvailability = async () => {
+        // Initialize availability with daily limits
+        const availability = {};
+        Object.entries(this.sizes).forEach(([size, data]) => {
+            availability[size] = data.limit;
+        });
+
+        // Get current bowl counts by size for today
+        const bowls = await this.db.all(`
+            SELECT size, COUNT(*) as count
+            FROM bowls
+            WHERE status = 'available'
+            AND DATE(createdAt) = DATE('now')
+            GROUP BY size
+        `);
+
+        // Update counts from database
+        bowls.forEach(bowl => {
+            if (availability[bowl.size]) {
+                availability[bowl.size] -= bowl.count;
+            }
+        });
+
+        return availability;
+    };
+
+    // Reset daily counts
+    this.resetDailyCounts = async () => {
+        await this.db.run(`
+            UPDATE bowls 
+            SET status = 'expired'
+            WHERE DATE(createdAt) < DATE('now')
+            AND status = 'available'
+        `);
+    };
 } 

@@ -1,8 +1,10 @@
 // src/pages/LoginPage.jsx
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { loginUser } from '../api';
 
 export default function LoginPage() {
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
@@ -31,16 +33,14 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-      const response = await loginUser(username, password);
-      if (response.success) {
-        setMessage('Login successful!');
-        // Store the token in localStorage
-        if (response.token) {
-          localStorage.setItem('authToken', response.token);
-        }
-        // You can redirect to another page here
-        // window.location.href = '/dashboard';
-      } else {
+    const response = await loginUser(username, password);
+    if (response.success) {
+      setMessage('Login successful!');
+        // Redirect to orders page after a short delay
+        setTimeout(() => {
+          navigate('/orders');
+        }, 1000);
+    } else {
         setMessage(response.message || 'Login failed. Please try again.');
       }
     } catch (error) {

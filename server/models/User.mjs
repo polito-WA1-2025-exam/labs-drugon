@@ -1,4 +1,5 @@
 // /models/User.mjs
+import bcrypt from 'bcrypt';
 
 export default function User() {
     // Create a new user
@@ -48,15 +49,14 @@ export default function User() {
         };
     };
 
-    // Hash password (in a real app, use a proper hashing library)
+    // Hash password using bcrypt
     this.hashPassword = async (password) => {
-        // This is just a placeholder. In a real app, use bcrypt or similar
-        return `hashed_${password}`;
+        const saltRounds = 10;
+        return await bcrypt.hash(password, saltRounds);
     };
 
-    // Verify password (in a real app, use proper verification)
+    // Verify password using bcrypt
     this.verifyPassword = async (password, hashedPassword) => {
-        // This is just a placeholder. In a real app, use bcrypt or similar
-        return `hashed_${password}` === hashedPassword;
+        return await bcrypt.compare(password, hashedPassword);
     };
 }; 

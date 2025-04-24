@@ -2,6 +2,8 @@ import express from 'express';
 import BowlDAO from './server/collections/BowlCollection.mjs';
 import OrderDAO from './server/collections/OrderCollection.mjs';
 import ShopDAO from './server/collections/ShopCollection.mjs';    // ← add this
+import UserDAO from './server/collections/UserCollection.mjs';
+import User from './server/models/User.mjs';
 
 
 const app = express();
@@ -9,8 +11,8 @@ const PORT = process.env.PORT || 3000;
 
 const bowlDao = new BowlDAO();
 const orderDao = new OrderDAO();
-
-const shopDao  = new ShopDAO();                                  
+const shopDao = new ShopDAO();
+const userDao = new UserDAO();
 
 app.use(express.json());
 
@@ -81,14 +83,108 @@ app.delete('/bowls/:id', async (req, res) => {
   result.success ? res.json(result) : res.status(404).json(result);
 });
 
-app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body;
-  const result = await userDao.verifyCredentials(username, password);
+// Clear users (for testing purposes)
+app.post('/api/clear-users', async (req, res) => {
+  try {
+    const result = await userDao.clearUsers();
+    res.json(result);
+  } catch (error) {
+    console.error('Error clearing users:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error clearing users'
+    });
+  }
+});
 
-  if (result.success) {
-    res.json(result); // success: send user
-  } else {
-    res.status(401).json(result); // failure: unauthorized
+// User routes
+app.post('/api/login', async (req, res) => {
+  try {
+  const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username and password are required'
+      });
+    }
+
+    // Get user by username
+    const user = await userDao.getUserByUsername(username);
+    
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid username or password'
+      });
+    }
+
+    // Create a User model instance to verify password
+    const userModel = new User();
+    
+    try {
+      const isValidPassword = await userModel.verifyPassword(password, user.password);
+      
+      if (!isValidPassword) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid username or password'
+        });
+      }
+
+      // Format user for response (excluding password)
+      const formattedUser = userModel.formatUser(user);
+      res.json({
+        success: true,
+        message: 'Login successful',
+        user: formattedUser
+      });
+    } catch (verifyError) {
+      console.error('Password verification error:', verifyError);
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid username or password'
+      });
+    }
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred during login'
+    });
+  }
+});
+
+// Register new user
+app.post('/api/register', async (req, res) => {
+  try {
+    const { username, password, email, fullName } = req.body;
+    
+    if (!username || !password || !email || !fullName) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    const result = await userDao.addUser({
+      username,
+      password,
+      email,
+      fullName
+    });
+
+    if (result.success) {
+      res.status(201).json(result);
+    } else {
+      res.status(400).json(result);
+    }
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred during registration'
+    });
   }
 });
 
@@ -192,9 +288,9 @@ app.get('/api/shops', async (req, res) => {
 app.post('/api/shops', async (req, res) => {
   try {
     const result = await shopDao.addShop(req.body);
-    if (result.success) {
+  if (result.success) {
       return res.status(201).json(result);
-    } else {
+  } else {
       return res.status(400).json(result);
     }
   } catch (err) {

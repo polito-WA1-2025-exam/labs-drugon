@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchShops, fetchAvailability } from '../api';
@@ -24,13 +23,12 @@ export default function HomePage() {
 
   return (
     <>
-
       <main className="home">
         <h1>Welcome to PokeShop</h1>
         {error && <p className="error">{error}</p>}
 
         <section>
-          <h2>Today’s Availability</h2>
+          <h2>Today's Availability</h2>
           <div className="grid availability-grid">
             {Object.entries(specs).map(([size, {label,price,proteins,ingredients}]) => (
               <AvailabilityCard

@@ -1,6 +1,7 @@
 // src/pages/LoginPage.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Form, Button, Card, Alert, Container } from 'react-bootstrap';
 import { loginUser } from '../api';
 
 export default function LoginPage() {
@@ -33,14 +34,14 @@ export default function LoginPage() {
 
     setIsLoading(true);
     try {
-    const response = await loginUser(username, password);
-    if (response.success) {
-      setMessage('Login successful!');
+      const response = await loginUser(username, password);
+      if (response.success) {
+        setMessage('Login successful!');
         // Redirect to orders page after a short delay
         setTimeout(() => {
           navigate('/orders');
         }, 1000);
-    } else {
+      } else {
         setMessage(response.message || 'Login failed. Please try again.');
       }
     } catch (error) {
@@ -52,40 +53,61 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="login-container">
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <div>
-          <input 
-            value={username} 
-            onChange={e => setUsername(e.target.value)} 
-            placeholder="Username"
-            disabled={isLoading}
-          />
-          {errors.username && <p className="error">{errors.username}</p>}
-        </div>
-        <div>
-          <input 
-            type="password" 
-            value={password} 
-            onChange={e => setPassword(e.target.value)} 
-            placeholder="Password"
-            disabled={isLoading}
-          />
-          {errors.password && <p className="error">{errors.password}</p>}
-        </div>
-        <button 
-          type="submit" 
-          disabled={isLoading}
-        >
-          {isLoading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-      {message && (
-        <p className={message.includes('successful') ? 'success' : 'error'}>
-          {message}
-        </p>
-      )}
-    </div>
+    <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+      <Card style={{ width: '400px' }}>
+        <Card.Body>
+          <Card.Title className="text-center mb-4">Login</Card.Title>
+          <Form onSubmit={handleLogin}>
+            <Form.Group className="mb-3">
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="Enter username"
+                isInvalid={!!errors.username}
+                disabled={isLoading}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.username}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Enter password"
+                isInvalid={!!errors.password}
+                disabled={isLoading}
+              />
+              <Form.Control.Feedback type="invalid">
+                {errors.password}
+              </Form.Control.Feedback>
+            </Form.Group>
+
+            <Button 
+              variant="primary" 
+              type="submit" 
+              className="w-100"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Logging in...' : 'Login'}
+            </Button>
+          </Form>
+
+          {message && (
+            <Alert 
+              variant={message.includes('successful') ? 'success' : 'danger'}
+              className="mt-3"
+            >
+              {message}
+            </Alert>
+          )}
+        </Card.Body>
+      </Card>
+    </Container>
   );
 }

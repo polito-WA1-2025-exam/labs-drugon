@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { Container, Navbar, Nav } from 'react-bootstrap'
 // import LoginPage from './pages/LoginPage'
 // import OrdersPage from './pages/OrdersPage'
 
@@ -12,26 +13,29 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        <header className="app-header">
-          <div className="header-left">
-            <Link to="/" className="logo">Poke Shop</Link>
-            <nav className="main-nav">
-              <Link to="/">Home</Link>
-              <Link to="/orders">Orders</Link>
-            </nav>
-          </div>
-          <div className="header-right">
-            <Link to="/login" className="login-link">Login</Link>
-          </div>
-        </header>
+        <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
+          <Container>
+            <Navbar.Brand as={Link} to="/">Poke Shop</Navbar.Brand>
+            <Navbar.Toggle aria-controls="basic-navbar-nav" />
+            <Navbar.Collapse id="basic-navbar-nav">
+              <Nav className="me-auto">
+                <Nav.Link as={Link} to="/">Home</Nav.Link>
+                <Nav.Link as={Link} to="/orders">Orders</Nav.Link>
+              </Nav>
+              <Nav>
+                <Nav.Link as={Link} to="/login">Login</Nav.Link>
+              </Nav>
+            </Navbar.Collapse>
+          </Container>
+        </Navbar>
         
-        <main className="main-content">
+        <Container>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/orders" element={<OrdersPage />} />
           </Routes>
-        </main>
+        </Container>
       </div>
     </Router>
   )

@@ -21,10 +21,6 @@ export async function loginUser(username, password) {
 export async function fetchOrders() {
   const res = await fetch(`${BASE_URL}/orders`);
   return res.json();
-
-
-
-  
 }
 
 export async function addOrder(orderData) {
@@ -63,6 +59,5 @@ export async function fetchAvailability() {
   if (!res.ok) throw new Error('Failed to fetch availability');
   return res.json();
 }
-
 
 // Add more functions: registerUser, fetchBowls, addOrder, etc.

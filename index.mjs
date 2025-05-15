@@ -22,9 +22,32 @@ app.get('/', (req, res) => {
 });
 
 // Create a new bowl
-app.post('/bowls', async (req, res) => {
-  const result = await bowlDao.addBowl(req.body);
-  result.success ? res.status(201).json(result) : res.status(400).json(result);
+app.post('/api/bowls', async (req, res) => {
+  try {
+    if (!req.body) {
+      return res.status(400).json({
+        success: false,
+        message: 'Request body is required'
+      });
+    }
+
+    const result = await bowlDao.addBowl(req.body);
+    
+    if (!result) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to create bowl'
+      });
+    }
+
+    return res.status(result.success ? 201 : 400).json(result);
+  } catch (error) {
+    console.error('Error creating bowl:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'An error occurred while creating the bowl'
+    });
+  }
 });
 
 // Get all bowls
@@ -300,15 +323,28 @@ app.post('/api/shops', async (req, res) => {
 
 
 // 2) Sizes availability
-//    GET  /api/availability
-//    (for now we return the static daily limits; later you can subtract real orders)
-// Replace your static version with this:
 app.get('/api/availability', async (_req, res) => {
   try {
+    console.log('Fetching availability...');
     const avail = await bowlDao.getAvailability();
-    res.json(avail);
+    
+    if (!avail) {
+      console.error('No availability data returned from bowlDao');
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to fetch availability data' 
+      });
+    }
+
+    console.log('Availability data:', avail);
+    return res.json(avail);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Error in availability endpoint:', err);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error fetching availability data',
+      error: err.message 
+    });
   }
 });
 // Start server

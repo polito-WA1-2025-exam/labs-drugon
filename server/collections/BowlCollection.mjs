@@ -22,10 +22,9 @@ export default function BowlDAO() {
         driver: sqlite3.Database
       });
 
-      // Drop and recreate the bowls table
+      // Create the bowls table if it doesn't exist
       await db.exec(`
-          DROP TABLE IF EXISTS bowls;
-          CREATE TABLE bowls (
+          CREATE TABLE IF NOT EXISTS bowls (
               id INTEGER PRIMARY KEY AUTOINCREMENT,
               size TEXT NOT NULL,
               base TEXT NOT NULL,
@@ -46,10 +45,13 @@ export default function BowlDAO() {
   // Add a new bowl
   this.addBowl = async ({ size, base, proteins, ingredients, quantity }) => {
     try {
+      const db = await initializeDb();
+      
+      // Validate bowl data
       const bowl = bowlModel.createBowl(size, base, proteins, ingredients, quantity);
       bowlModel.validateBowl(bowl);
 
-      const db = await initializeDb();
+      // Insert the bowl
       const result = await db.run(
         `INSERT INTO bowls (size, base, proteins, ingredients, quantity, createdAt)
          VALUES (?, ?, ?, ?, ?, ?)`,
@@ -63,14 +65,20 @@ export default function BowlDAO() {
         ]
       );
 
+      // Get the created bowl
       const createdBowl = await db.get('SELECT * FROM bowls WHERE id = ?', result.lastID);
       
+      if (!createdBowl) {
+        throw new Error('Failed to retrieve created bowl');
+      }
+
       return {
         success: true,
         message: 'Bowl added successfully',
         bowl: bowlModel.formatBowl(createdBowl)
       };
     } catch (error) {
+      console.error('Error adding bowl:', error);
       return {
         success: false,
         message: `Error adding bowl: ${error.message}`

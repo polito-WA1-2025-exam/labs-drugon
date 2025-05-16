@@ -53,6 +53,28 @@ export default function Bowl(db) {
             throw new Error('Bowl must have ingredients');
         }
 
+        // Convert to arrays if they're strings
+        const proteins = this.parseArrayField(bowl.proteins);
+        const ingredients = this.parseArrayField(bowl.ingredients);
+
+        // Validate protein count based on size
+        if (bowl.size === 'R' && proteins.length !== 1) {
+            throw new Error('Regular bowls must have exactly 1 protein');
+        } else if (bowl.size === 'M' && proteins.length > 2) {
+            throw new Error('Medium bowls can have up to 2 proteins');
+        } else if (bowl.size === 'L' && proteins.length > 3) {
+            throw new Error('Large bowls can have up to 3 proteins');
+        }
+
+        // Validate ingredient count based on size
+        if (bowl.size === 'R' && ingredients.length > 4) {
+            throw new Error('Regular bowls can have up to 4 ingredients');
+        } else if (bowl.size === 'M' && ingredients.length > 4) {
+            throw new Error('Medium bowls can have up to 4 ingredients');
+        } else if (bowl.size === 'L' && ingredients.length > 6) {
+            throw new Error('Large bowls can have up to 6 ingredients');
+        }
+
         if (typeof bowl.quantity !== 'number' || bowl.quantity < 0) {
             throw new Error('Invalid bowl quantity');
         }
@@ -130,12 +152,13 @@ export default function Bowl(db) {
         const bowls = await this.db.all(`
             SELECT size, COUNT(*) as count
             FROM bowls
-            WHERE status = 'available'
+            WHERE status = 'ordered'
             AND DATE(createdAt) = DATE('now')
+            AND orderId IS NOT NULL
             GROUP BY size
         `);
 
-        // Update counts from database
+        // Subtract ordered bowls from daily limits
         bowls.forEach(bowl => {
             if (availability[bowl.size]) {
                 availability[bowl.size] -= bowl.count;

@@ -1,13 +1,52 @@
-### Test Availability Endpoint
+### Authentication Tests
+# @name login
+POST http://localhost:3000/api/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "testpass123"
+}
+
+### Register New User
+POST http://localhost:3000/api/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "testpass123",
+  "email": "test@example.com",
+  "fullName": "Test User"
+}
+
+### User Management Tests
+### Get All Users
+GET http://localhost:3000/api/users
+Accept: application/json
+
+### Get User by ID
+GET http://localhost:3000/api/users/1
+Accept: application/json
+
+### Update User
+PUT http://localhost:3000/api/users/1
+Content-Type: application/json
+
+{
+  "fullName": "Updated Test User",
+  "email": "updated@example.com"
+}
+
+### Delete User
+DELETE http://localhost:3000/api/users/1
+
+### Bowl Management Tests
+### Get Bowl Availability
 GET http://localhost:3000/api/availability
 Accept: application/json
 
-### Test Availability Endpoint (Alternative Port)
-GET http://localhost:5000/api/availability
-Accept: application/json
-
-### Test Create Bowl (Regular)
-POST http://localhost:3000/bowls
+### Create Regular Bowl
+POST http://localhost:3000/api/bowls
 Content-Type: application/json
 
 {
@@ -18,8 +57,8 @@ Content-Type: application/json
   "quantity": 1
 }
 
-### Test Create Bowl (Medium)
-POST http://localhost:3000/bowls
+### Create Medium Bowl
+POST http://localhost:3000/api/bowls
 Content-Type: application/json
 
 {
@@ -30,8 +69,8 @@ Content-Type: application/json
   "quantity": 1
 }
 
-### Test Create Bowl (Large)
-POST http://localhost:3000/bowls
+### Create Large Bowl
+POST http://localhost:3000/api/bowls
 Content-Type: application/json
 
 {
@@ -42,8 +81,8 @@ Content-Type: application/json
   "quantity": 1
 }
 
-### Test Create Multiple Bowls (Regular)
-POST http://localhost:3000/bowls
+### Create Multiple Bowls
+POST http://localhost:3000/api/bowls
 Content-Type: application/json
 
 {
@@ -54,8 +93,8 @@ Content-Type: application/json
   "quantity": 5
 }
 
-### Test Create Bowl (Invalid Size)
-POST http://localhost:3000/bowls
+### Test Invalid Bowl Size
+POST http://localhost:3000/api/bowls
 Content-Type: application/json
 
 {
@@ -66,8 +105,8 @@ Content-Type: application/json
   "quantity": 1
 }
 
-### Test Create Bowl (Exceeding Daily Limit)
-POST http://localhost:3000/bowls
+### Test Exceeding Daily Limit
+POST http://localhost:3000/api/bowls
 Content-Type: application/json
 
 {
@@ -75,9 +114,113 @@ Content-Type: application/json
   "base": "rice",
   "proteins": ["salmon"],
   "ingredients": ["cucumber", "avocado", "carrot"],
-  "quantity": 15
+  "quantity": 8
 }
 
-### Test Reset Daily Counts
-POST http://localhost:3000/bowls/reset
-Content-Type: application/json 
+### Reset Daily Counts
+POST http://localhost:3000/api/bowls/reset
+Content-Type: application/json
+
+### Order Management Tests
+### Create New Order
+POST http://localhost:3000/api/orders
+Content-Type: application/json
+Cookie: connect.sid={{login.response.headers.set-cookie}}
+
+{
+  "bowls": [
+    {
+      "size": "R",
+      "base": "rice",
+      "proteins": ["chicken"],
+      "ingredients": ["carrot"],
+      "quantity": 1
+    }
+  ],
+  "totalPrice": 10.00,
+  "status": "pending"
+  
+}
+
+### Get All Orders
+GET http://localhost:3000/api/orders
+Accept: application/json
+Cookie: connect.sid={{login.response.headers.set-cookie}}
+
+### Get Order by ID
+GET http://localhost:3000/api/orders/1
+Accept: application/json
+Cookie: connect.sid={{login.response.headers.set-cookie}}
+
+### Get Orders by User
+GET http://localhost:3000/api/orders/user/1
+Accept: application/json
+Cookie: connect.sid={{login.response.headers.set-cookie}}
+
+### Get Orders by Status
+GET http://localhost:3000/api/orders/status/pending
+Accept: application/json
+Cookie: connect.sid={{login.response.headers.set-cookie}}
+
+### Update Order Status
+PUT http://localhost:3000/api/orders/1/status
+Content-Type: application/json
+Cookie: connect.sid={{login.response.headers.set-cookie}}
+
+{
+  "status": "confirmed"
+}
+
+### Shop Management Tests
+### Create New Shop
+POST http://localhost:3000/api/shops
+Content-Type: application/json
+
+{
+  "name": "Test Shop",
+  "address": "123 Test Street",
+  "openingHours": {
+    "monday": "9:00-17:00",
+    "tuesday": "9:00-17:00",
+    "wednesday": "9:00-17:00",
+    "thursday": "9:00-17:00",
+    "friday": "9:00-17:00"
+  }
+}
+
+### Get All Shops
+GET http://localhost:3000/api/shops
+Accept: application/json
+
+### Get Shop by ID
+GET http://localhost:3000/api/shops/1
+Accept: application/json
+
+### Get Active Shops
+GET http://localhost:3000/api/shops/active
+Accept: application/json
+
+### Update Shop Status
+PUT http://localhost:3000/api/shops/1/status
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+### Delete Shop
+DELETE http://localhost:3000/api/shops/1
+
+### Database Management Tests
+### Clear All Users (Testing)
+POST http://localhost:3000/api/users/clear
+Content-Type: application/json
+
+### Clear All Bowls (Testing)
+POST http://localhost:3000/api/bowls/clear
+Content-Type: application/json
+
+
+
+
+//curl -X POST http://localhost:3000/api/bowls/clear

@@ -27,7 +27,12 @@ db.serialize(() => {
       base TEXT NOT NULL,            -- 'rice', 'black rice', 'salad'
       proteins TEXT,                 -- can store as comma-separated or JSON
       ingredients TEXT,              -- can store as comma-separated or JSON
-      quantity INTEGER NOT NULL
+      quantity INTEGER NOT NULL,
+      status TEXT DEFAULT 'available', -- 'available', 'ordered', 'expired'
+      orderId INTEGER,               -- foreign key to orders table
+      createdAt TEXT NOT NULL,
+      updatedAt TEXT,
+      FOREIGN KEY (orderId) REFERENCES orders(id)
     )
   `);
 

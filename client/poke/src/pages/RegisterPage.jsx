@@ -1,28 +1,37 @@
-// src/pages/LoginPage.jsx
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginUser } from '../api';
+import { registerUser } from '../api';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const navigate = useNavigate();
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setMessage('Passwords do not match.');
+      return;
+    }
     setIsLoading(true);
     try {
-      const response = await loginUser(email, password);
+      const response = await registerUser({
+        username: email,
+        password,
+        email,
+        fullName
+      });
       if (response.success) {
-        // Force a page reload to update the user state in App.jsx
-        window.location.href = '/orders';
+        navigate('/login');
       } else {
-        setMessage('Login failed. Please check your email and password.');
+        setMessage(response.message || 'Registration failed.');
       }
     } catch (error) {
-      setMessage('An error occurred. Please try again later.');
+      setMessage(error.message || 'An error occurred. Please try again later.');
     } finally {
       setIsLoading(false);
     }
@@ -38,11 +47,29 @@ export default function LoginPage() {
       boxShadow: '0 2px 12px rgba(0,0,0,0.08)'
     }}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <div style={{ color: '#6c757d', fontSize: 16, marginBottom: 16 }}>
-          Login to your account to place orders and view your order history
+        <h2 style={{ fontWeight: 700, marginBottom: 8 }}>Create an account</h2>
+        <div style={{ color: '#6c757d', fontSize: 16 }}>
+          Enter your details to create an account and start ordering
         </div>
       </div>
-      <form onSubmit={handleLogin}>
+      <form onSubmit={handleRegister}>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontWeight: 500 }}>Full Name</label>
+          <input
+            type="text"
+            placeholder="Your full name"
+            value={fullName}
+            onChange={e => setFullName(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: 6,
+              border: '1px solid #ddd',
+              marginTop: 4
+            }}
+            required
+          />
+        </div>
         <div style={{ marginBottom: 16 }}>
           <label style={{ fontWeight: 500 }}>Email</label>
           <input
@@ -60,13 +87,30 @@ export default function LoginPage() {
             required
           />
         </div>
-        <div style={{ marginBottom: 16, position: 'relative' }}>
+        <div style={{ marginBottom: 16 }}>
           <label style={{ fontWeight: 500 }}>Password</label>
           <input
             type="password"
             placeholder="••••••••"
             value={password}
             onChange={e => setPassword(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px',
+              borderRadius: 6,
+              border: '1px solid #ddd',
+              marginTop: 4
+            }}
+            required
+          />
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ fontWeight: 500 }}>Confirm Password</label>
+          <input
+            type="password"
+            placeholder="••••••••"
+            value={confirmPassword}
+            onChange={e => setConfirmPassword(e.target.value)}
             style={{
               width: '100%',
               padding: '10px',
@@ -94,7 +138,7 @@ export default function LoginPage() {
             opacity: isLoading ? 0.7 : 1
           }}
         >
-          {isLoading ? 'Logging in...' : 'Login'}
+          {isLoading ? 'Registering...' : 'Register'}
         </button>
       </form>
       {message && (
@@ -109,29 +153,10 @@ export default function LoginPage() {
           {message}
         </div>
       )}
-      <div style={{ textAlign: 'center', marginBottom: 16, marginTop: 8 }}>
-        <span style={{ color: '#6c757d' }}>Don't have an account? </span>
-        <a href="/register" style={{ color: '#4ca1af', fontWeight: 500 }}>Register</a>
+      <div style={{ textAlign: 'center', marginTop: 8 }}>
+        <span style={{ color: '#6c757d' }}>Already have an account? </span>
+        <a href="/login" style={{ color: '#4ca1af', fontWeight: 500 }}>Login</a>
       </div>
-      <div style={{ textAlign: 'center', color: '#888', margin: '16px 0 8px' }}>
-        OR CONTINUE WITH
-      </div>
-      <button style={{
-        width: '100%',
-        background: '#fff',
-        border: '1px solid #ddd',
-        borderRadius: 6,
-        padding: '10px 0',
-        fontWeight: 500,
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px'
-      }} type="button">
-        <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: 18, height: 18 }} />
-        Google
-      </button>
     </div>
   );
-}
+} 

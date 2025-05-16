@@ -17,35 +17,96 @@ export default function BowlDAO() {
   // Initialize database connection
   const initializeDb = async () => {
     if (!db) {
-      db = await open({
-        filename: dbPath,
-        driver: sqlite3.Database
-      });
+      try {
+        db = await open({
+          filename: 'poke_shop.db',
+          driver: sqlite3.Database,
+          mode: sqlite3.OPEN_READWRITE
+        });
 
-      // Create the bowls table if it doesn't exist
-      await db.exec(`
-          CREATE TABLE IF NOT EXISTS bowls (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              size TEXT NOT NULL,
-              base TEXT NOT NULL,
-              proteins TEXT NOT NULL,
-              ingredients TEXT NOT NULL,
-              quantity INTEGER NOT NULL,
-              status TEXT DEFAULT 'available',
-              createdAt TEXT NOT NULL
-          )
-      `);
+        // Enable foreign keys
+        await db.exec('PRAGMA foreign_keys = ON');
+        
+        // Create the bowls table if it doesn't exist
+        await db.exec(`
+            CREATE TABLE IF NOT EXISTS bowls (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                size TEXT NOT NULL,
+                base TEXT NOT NULL,
+                proteins TEXT NOT NULL,
+                ingredients TEXT NOT NULL,
+                quantity INTEGER NOT NULL,
+                status TEXT DEFAULT 'available',
+                orderId INTEGER,
+                createdAt TEXT NOT NULL,
+                updatedAt TEXT,
+                FOREIGN KEY (orderId) REFERENCES orders(id)
+            )
+        `);
 
-      // Initialize bowl model with database connection
-      bowlModel = new Bowl(db);
+        // Initialize bowl model with database connection
+        bowlModel = new Bowl(db);
+
+        // Check if we need to initialize bowls
+        const count = await db.get('SELECT COUNT(*) as count FROM bowls');
+        if (count.count === 0) {
+          console.log('Initializing bowls table...');
+          // Initialize with daily limits
+          const sizes = {
+            R: { count: 10, base: 'rice', proteins: ['salmon'], ingredients: ['cucumber'] },
+            M: { count: 8, base: 'rice', proteins: ['salmon'], ingredients: ['cucumber'] },
+            L: { count: 6, base: 'rice', proteins: ['salmon'], ingredients: ['cucumber'] }
+          };
+
+          for (const [size, data] of Object.entries(sizes)) {
+            await db.run(
+              `INSERT INTO bowls (size, base, proteins, ingredients, quantity, status, orderId, createdAt, updatedAt)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              [
+                size,
+                data.base,
+                data.proteins.join(','),
+                data.ingredients.join(','),
+                data.count,  // Set the quantity to the daily limit
+                'available',
+                null,
+                new Date().toISOString(),
+                new Date().toISOString()
+              ]
+            );
+          }
+          console.log('Bowls initialized successfully');
+        }
+      } catch (error) {
+        console.error('Database initialization error:', error);
+        throw error;
+      }
     }
     return db;
   };
 
   // Add a new bowl
-  this.addBowl = async ({ size, base, proteins, ingredients, quantity }) => {
+  this.addBowl = async ({ size, base, proteins, ingredients, quantity, status = 'available', orderId = null, createdAt = new Date().toISOString() }) => {
     try {
       const db = await initializeDb();
+      
+      // Check daily limit before adding bowl
+      const availability = await bowlModel.getAvailability();
+      const currentCount = await db.get(
+        `SELECT COUNT(*) as count FROM bowls 
+         WHERE size = ? 
+         AND status = 'ordered' 
+         AND DATE(createdAt) = DATE('now')
+         AND orderId IS NOT NULL`,
+        [size]
+      );
+
+      if (currentCount.count + quantity > bowlModel.sizes[size].limit) {
+        return {
+          success: false,
+          message: `Cannot add ${quantity} bowls of size ${size}. Daily limit is ${bowlModel.sizes[size].limit} and ${currentCount.count} have already been ordered today.`
+        };
+      }
       
       // Validate bowl data
       const bowl = bowlModel.createBowl(size, base, proteins, ingredients, quantity);
@@ -53,14 +114,17 @@ export default function BowlDAO() {
 
       // Insert the bowl
       const result = await db.run(
-        `INSERT INTO bowls (size, base, proteins, ingredients, quantity, createdAt)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO bowls (size, base, proteins, ingredients, quantity, status, orderId, createdAt, updatedAt)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           bowl.size,
           bowl.base,
           Array.isArray(bowl.proteins) ? bowl.proteins.join(',') : bowl.proteins,
           Array.isArray(bowl.ingredients) ? bowl.ingredients.join(',') : bowl.ingredients,
           bowl.quantity,
+          status,
+          orderId,
+          createdAt,
           new Date().toISOString()
         ]
       );
@@ -205,9 +269,32 @@ export default function BowlDAO() {
       await db.run('DELETE FROM bowls');
       await db.run('DELETE FROM sqlite_sequence WHERE name = "bowls"'); // Reset autoincrement
       
+      // Re-initialize the bowls
+      const sizes = {
+        R: { count: 10, base: 'rice', proteins: ['salmon'], ingredients: ['cucumber'] },
+        M: { count: 8, base: 'rice', proteins: ['salmon'], ingredients: ['cucumber'] },
+        L: { count: 6, base: 'rice', proteins: ['salmon'], ingredients: ['cucumber'] }
+      };
+
+      for (const [size, data] of Object.entries(sizes)) {
+        await db.run(
+          `INSERT INTO bowls (size, base, proteins, ingredients, quantity, status, createdAt)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [
+            size,
+            data.base,
+            data.proteins.join(','),
+            data.ingredients.join(','),
+            data.count,  // Set the quantity to the daily limit
+            'available',
+            new Date().toISOString()
+          ]
+        );
+      }
+      
       return {
         success: true,
-        message: 'All bowls cleared'
+        message: 'All bowls cleared and re-initialized'
       };
     } catch (error) {
       return {

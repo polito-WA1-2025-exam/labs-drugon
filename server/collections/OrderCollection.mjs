@@ -2,10 +2,15 @@ import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import Order from '../models/Order.mjs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+import BowlDAO from './BowlCollection.mjs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default function OrderDAO() {
     let db = null;
     const orderModel = new Order();
+    const bowlDao = new BowlDAO();
 
     // Initialize database connection
     const initializeDb = async () => {
@@ -15,49 +20,76 @@ export default function OrderDAO() {
                 driver: sqlite3.Database
             });
 
-            // Create orders table if it doesn't exist
+            // Drop and recreate orders table to ensure correct schema
             await db.exec(`
-                CREATE TABLE IF NOT EXISTS orders (
+                DROP TABLE IF EXISTS orders;
+                CREATE TABLE orders (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     userId INTEGER NOT NULL,
                     bowls TEXT NOT NULL,
                     totalPrice REAL NOT NULL,
                     status TEXT NOT NULL,
+                    specialRequests TEXT,
                     createdAt TEXT NOT NULL,
                     FOREIGN KEY (userId) REFERENCES users(id)
                 )
             `);
+
+            // Check if specialRequests column exists, if not add it
+            try {
+                await db.get("SELECT specialRequests FROM orders LIMIT 1");
+            } catch (error) {
+                if (error.code === 'SQLITE_ERROR') {
+                    console.log('Adding specialRequests column to orders table...');
+                    await db.exec('ALTER TABLE orders ADD COLUMN specialRequests TEXT');
+                }
+            }
         }
         return db;
     };
 
     // Add a new order
-    this.addOrder = async ({ userId, bowls, totalPrice }) => {
+    this.addOrder = async ({ userId, bowls, totalPrice, status = 'pending', specialRequests = '' }) => {
         try {
-            const order = orderModel.createOrder(userId, bowls, totalPrice);
-            orderModel.validateOrder(order);
-
+            // Convert bowls array to JSON string for storage
+            const bowlsJson = JSON.stringify(bowls);
+            
             const db = await initializeDb();
             const result = await db.run(
-                `INSERT INTO orders (userId, bowls, totalPrice, status, createdAt)
-                 VALUES (?, ?, ?, ?, ?)`,
+                `INSERT INTO orders (userId, bowls, totalPrice, status, specialRequests, createdAt)
+                 VALUES (?, ?, ?, ?, ?, ?)`,
                 [
-                    order.userId,
-                    Array.isArray(order.bowls) ? order.bowls.join(',') : order.bowls,
-                    order.totalPrice,
-                    order.status,
+                    userId,
+                    bowlsJson,
+                    totalPrice,
+                    status,
+                    specialRequests || '',  // Ensure it's never null
                     new Date().toISOString()
                 ]
             );
 
             const createdOrder = await db.get('SELECT * FROM orders WHERE id = ?', result.lastID);
+
+            // Insert each bowl into the bowls table with status 'ordered' and today's date
+            for (const bowl of bowls) {
+                await bowlDao.addBowl({
+                    ...bowl,
+                    status: 'ordered',
+                    orderId: result.lastID,  // Set the orderId to link the bowl to this order
+                    createdAt: new Date().toISOString()
+                });
+            }
             
             return {
                 success: true,
                 message: 'Order added successfully',
-                order: orderModel.formatOrder(createdOrder)
+                order: {
+                    ...createdOrder,
+                    bowls: JSON.parse(createdOrder.bowls)
+                }
             };
         } catch (error) {
+            console.error('Error adding order:', error);
             return {
                 success: false,
                 message: `Error adding order: ${error.message}`
@@ -150,25 +182,50 @@ export default function OrderDAO() {
     // Delete an order
     this.deleteOrder = async (id) => {
         try {
+            console.log('Attempting to delete order:', id);
             const db = await initializeDb();
-            const result = await db.run('DELETE FROM orders WHERE id = ?', id);
-
-            if (result.changes === 0) {
-                return {
-                    success: false,
-                    message: `Order with ID ${id} not found`
-                };
+            
+            // First get the order details to know which bowls to update
+            const order = await db.get('SELECT * FROM orders WHERE id = ?', [id]);
+            console.log('Found order:', order);
+            
+            if (!order) {
+                console.log('No order found with id:', id);
+                return { success: false, message: 'Order not found' };
             }
 
-            return {
-                success: true,
-                message: 'Order deleted successfully'
-            };
+            // Parse the bowls from the order
+            const bowls = JSON.parse(order.bowls);
+            console.log('Parsed bowls:', bowls);
+
+            // Update the status of the bowls back to 'available'
+            for (const bowl of bowls) {
+                const quantity = bowl.quantity || 1;
+                
+                // Update all bowls associated with this order
+                await db.run(
+                    `UPDATE bowls 
+                     SET status = 'available', 
+                         orderId = NULL, 
+                         updatedAt = CURRENT_TIMESTAMP 
+                     WHERE orderId = ?`,
+                    [id]
+                );
+            }
+
+            // Delete the order
+            const result = await db.run('DELETE FROM orders WHERE id = ?', [id]);
+            console.log('Delete result:', result);
+
+            if (result.changes === 0) {
+                console.log('No rows were deleted');
+                return { success: false, message: 'Order not found' };
+            }
+
+            return { success: true, message: 'Order deleted successfully' };
         } catch (error) {
-            return {
-                success: false,
-                message: `Error deleting order: ${error.message}`
-            };
+            console.error('Error in deleteOrder:', error);
+            throw new Error(`Error deleting order: ${error.message}`);
         }
     };
 

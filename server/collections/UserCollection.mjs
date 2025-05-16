@@ -95,6 +95,13 @@ export default function UserDAO() {
         return user || null;
     };
 
+    // Get user by email
+    this.getUserByEmail = async (email) => {
+        const db = await initializeDb();
+        const user = await db.get('SELECT * FROM users WHERE email = ?', email);
+        return user || null;
+    };
+
     // Update user
     this.updateUser = async (id, updates) => {
         try {
